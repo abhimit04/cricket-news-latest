@@ -1,42 +1,25 @@
-const CricketNewsAgent = require('../cricket-agent');
+const SimpleCricketNewsAgent = require('../simple-cricket-agent');
 
 // Vercel serverless function handler
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight requests
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
-  // Only allow GET and POST requests
   if (req.method !== 'GET' && req.method !== 'POST') {
-    return res.status(405).json({ 
-      success: false, 
-      error: 'Method not allowed. Use GET or POST.' 
-    });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Add timeout handling
-  const timeout = setTimeout(() => {
-    res.status(504).json({
-      success: false,
-      error: 'Request timeout - cricket report generation took too long',
-      timestamp: new Date().toISOString()
-    });
-  }, 55000); // 55 seconds timeout (Vercel allows 60s max)
-
   try {
-    console.log('🏏 Cricket report API called at:', new Date().toISOString());
+    console.log('🏏 Cricket report API called');
     
-    const agent = new CricketNewsAgent();
+    const agent = new SimpleCricketNewsAgent();
     const result = await agent.runDailyCricketReport();
-    
-    clearTimeout(timeout);
     
     res.status(200).json({
       success: true,
@@ -47,14 +30,12 @@ export default async function handler(req, res) {
     });
     
   } catch (error) {
-    clearTimeout(timeout);
-    console.error('❌ Cricket API Error:', error);
+    console.error('❌ API Error:', error);
     
     res.status(500).json({
       success: false,
       error: error.message,
-      timestamp: new Date().toISOString(),
-      details: 'Check server logs for more information'
+      timestamp: new Date().toISOString()
     });
   }
 }
