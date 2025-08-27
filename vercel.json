@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "functions": {
+    "api/cricket-report.js": {
+      "runtime": "nodejs18.x",
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cricket-report",
+      "schedule": "0 8 * * *"
+    }
+  ],
+  "env": {
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+    "PUPPETEER_EXECUTABLE_PATH": "/usr/bin/chromium-browser"
+  }
+}
