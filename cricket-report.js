@@ -305,5 +305,9 @@ module.exports = async function handler(req, res) {
       error: error.message,
       timestamp: new Date().toISOString()
     });
+    export default function handler(req, res) {
+  res.status(200).json({ message: "Cricket report API is working!" });
+}
   }
 };
+
