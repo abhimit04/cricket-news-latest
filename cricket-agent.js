@@ -8,7 +8,7 @@ class SimpleCricketNewsAgent {
     // Initialize Gemini AI
     this.genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
     this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
-    
+
     // Initialize email transporter
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -33,29 +33,29 @@ class SimpleCricketNewsAgent {
     ];
 
     const articles = [];
-    
+
     for (const feed of feeds) {
       try {
         console.log(`Crawling ${feed.source}...`);
-        
+
         const response = await axios.get(feed.url, {
           timeout: 15000,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
           }
         });
-        
+
         const $ = cheerio.load(response.data, { xmlMode: true });
-        
+
         $('item').each((index, element) => {
           if (index >= 15) return false; // Limit per feed
-          
+
           const $element = $(element);
           const title = $element.find('title').text().trim();
           const summary = $element.find('description').text().trim().replace(/<[^>]*>/g, '');
           const link = $element.find('link').text().trim();
           const pubDate = $element.find('pubDate').text().trim();
-          
+
           if (title && link) {
             articles.push({
               title,
@@ -66,9 +66,9 @@ class SimpleCricketNewsAgent {
             });
           }
         });
-        
+
         console.log(`✅ ${feed.source}: ${articles.filter(a => a.source === feed.source).length} articles`);
-        
+
       } catch (error) {
         console.error(`❌ Error crawling ${feed.source}:`, error.message);
       }
@@ -98,7 +98,7 @@ class SimpleCricketNewsAgent {
       });
 
       const matches = response.data?.data || [];
-      
+
       return matches.slice(0, 5).map(match => ({
         title: `${match.name || 'Cricket Match'} - ${match.status || 'Live'}`,
         summary: `${match.teams?.[0] || ''} vs ${match.teams?.[1] || ''}. ${match.venue || ''}`,
@@ -116,18 +116,18 @@ class SimpleCricketNewsAgent {
   removeDuplicates(articles) {
     const unique = [];
     const seenTitles = new Set();
-    
+
     for (const article of articles) {
       const normalizedTitle = article.title.toLowerCase().replace(/[^\w\s]/g, '');
       const words = normalizedTitle.split(' ').filter(w => w.length > 3);
       const titleKey = words.slice(0, 5).join(' ');
-      
+
       if (!seenTitles.has(titleKey) && titleKey.length > 10) {
         seenTitles.add(titleKey);
         unique.push(article);
       }
     }
-    
+
     return unique;
   }
 
@@ -137,7 +137,7 @@ class SimpleCricketNewsAgent {
       return "No cricket news found today. The RSS feeds might be temporarily unavailable.";
     }
 
-    const newsContent = articles.map((article, index) => 
+    const newsContent = articles.map((article, index) =>
       `${index + 1}. **${article.title}** (${article.source})
 Summary: ${article.summary}
 Link: ${article.link}
@@ -149,7 +149,7 @@ You are a cricket expert creating a daily cricket news report. Analyze these cri
 
 Structure your report with these sections:
 1. **🔥 TOP HEADLINES** - Most important 3-4 stories
-2. **🏏 MATCH UPDATES** - Live games, results, upcoming fixtures  
+2. **🏏 MATCH UPDATES** - Live games, results, upcoming fixtures
 3. **👥 PLAYER NEWS** - Player updates, performances, transfers
 4. **🏆 TEAM & TOURNAMENT NEWS** - Team news, league updates
 5. **📈 KEY TAKEAWAYS** - 3-4 bullet points for cricket fans
@@ -167,31 +167,31 @@ Please provide a well-structured report that cricket enthusiasts would find valu
       return response.text();
     } catch (error) {
       console.error('Error generating AI report:', error);
-      
+
       // Fallback report
       let fallbackReport = "# 🏏 Daily Cricket News Report\n\n";
       fallbackReport += "## Latest Cricket News\n\n";
-      
+
       articles.slice(0, 10).forEach((article, index) => {
         fallbackReport += `**${index + 1}. ${article.title}**\n`;
         fallbackReport += `Source: ${article.source}\n`;
         fallbackReport += `${article.summary}\n`;
         fallbackReport += `[Read more](${article.link})\n\n`;
       });
-      
+
       return fallbackReport;
     }
   }
 
   // Send cricket report via email
   async sendCricketReport(reportContent, articlesCount) {
-    const today = new Date().toLocaleDateString('en-US', { 
+    const today = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
-    
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.REPORT_RECIPIENT_EMAIL,
@@ -202,7 +202,7 @@ Please provide a well-structured report that cricket enthusiasts would find valu
             <h1>🏏 Daily Cricket News Report</h1>
             <p>${today} | ${articlesCount} stories found</p>
           </header>
-          
+
           <div style="padding: 20px; background: #f8f9fa;">
             <div style="background: white; padding: 20px; border-radius: 8px;">
               ${reportContent
@@ -215,7 +215,7 @@ Please provide a well-structured report that cricket enthusiasts would find valu
                 .replace(/$/, '</p>')}
             </div>
           </div>
-          
+
           <footer style="background: #333; color: white; padding: 15px; text-align: center;">
             <small>🤖 Generated by AI Cricket News Agent | ${new Date().toLocaleTimeString()}</small>
           </footer>
@@ -237,10 +237,10 @@ Please provide a well-structured report that cricket enthusiasts would find valu
   async runDailyCricketReport() {
     try {
       console.log('🏏 Starting cricket news report...');
-      
+
       const articles = await this.crawlCricketNews();
       console.log(`📰 Found ${articles.length} articles`);
-      
+
       if (articles.length === 0) {
         await this.sendCricketReport("No cricket news available today.", 0);
         return { success: true, articleCount: 0 };
@@ -253,12 +253,12 @@ Please provide a well-structured report that cricket enthusiasts would find valu
       await this.sendCricketReport(report, articles.length);
 
       console.log('✅ Report completed successfully!');
-      return { 
-        success: true, 
+      return {
+        success: true,
         articleCount: articles.length,
         sources: [...new Set(articles.map(a => a.source))]
       };
-      
+
     } catch (error) {
       console.error('❌ Error:', error);
       throw error;
