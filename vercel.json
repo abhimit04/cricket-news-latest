@@ -2,9 +2,9 @@
   "version": 2,
   "crons": [
     {
-      "path": "/api/cricket-report",
-      
+      "path": "/api/cricket-report"  
     }
   ]
 }
+
 
