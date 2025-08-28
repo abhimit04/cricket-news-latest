@@ -12,7 +12,7 @@ class SimpleCricketNewsAgent {
     this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
     
     // Initialize email transporter
-    this.transporter = nodemailer.createTransporter({
+    this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
@@ -310,4 +310,5 @@ module.exports = async function handler(req, res) {
 };
    export default function handler(req, res) {
   res.status(200).json({ message: "Cricket report API is working!" });
+
 
