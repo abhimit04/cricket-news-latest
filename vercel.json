@@ -3,7 +3,8 @@
   "crons": [
     {
       "path": "/api/cricket-report",
-      "schedule": "0 0 * * *"
+      
     }
   ]
 }
+
