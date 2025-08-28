@@ -2,7 +2,7 @@
   "name": "cricket-news-ai-agent",
   "version": "1.0.0",
   "description": "AI agent that crawls cricket websites and sends daily news reports",
-  "main": "api/cricket-report.js",
+  "main": "cricket-report.js",
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod"
@@ -17,3 +17,4 @@
     "node": "18.x"
   }
 }
+
